@@ -3,10 +3,10 @@
 #include <string>
 #include <cstdlib>
 #include "config.h"
+#include "Snake.h"
 
 class Fruit {
 protected:
-	Texture2D texture;
 	int col, row;
 public:
 	Fruit(int col, int row) {
@@ -18,26 +18,55 @@ public:
 			this->col = 1;
 			this->row = 1;
 		}
-		texture = LoadTexture("apple.png");
 	}
 	int GetRow() { return row; }
 	int GetCol() { return col; }
-	void Draw() {
-		int cell_x = col * CELL_SIZE + CELL_ORIGIN_X;
-		int cell_y = row * CELL_SIZE + CELL_ORIGIN_Y;
-		DrawTexture(texture, cell_x, cell_y, WHITE);
+	bool Collide(Snake & snake) {
+		if (snake.GetCol() == col && snake.GetRow() == row) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
-	virtual void Eat() {}
+	virtual void Draw() {}
+	virtual void GetEatenBy(Snake & snake) {}
 };
 
 class Apple: public Fruit {
 private:
 	int length_to_add = 1;
+	int speed_to_increase  = 1;
 public:
+	static Texture2D texture;
 	Apple(int col, int row) : Fruit(col, row) {
-		texture = LoadTexture("apple.png");
+		
 	}
-	void Eat() override {
-
+	void GetEatenBy(Snake & snake) override {
+		snake.IncreaseLength();
+		snake.AddSpeed(speed_to_increase);
+	}
+	void Draw() override {
+		DrawTexture(texture, GetCellX(col), GetCellY(row), WHITE);
 	}
 };
+Texture2D Apple::texture;
+
+class Pear : public Fruit {
+private:
+	int speed_to_decrease = 1;
+	int length_to_decrease = 1;
+public:
+	static Texture2D texture;
+	Pear(int col, int row) : Fruit(col, row) {
+
+	}
+	void GetEatenBy(Snake & snake) override {
+		snake.AddSpeed(-speed_to_decrease);
+		snake.DecreaseLength(length_to_decrease);
+	}
+	void Draw() override {
+		DrawTexture(texture, GetCellX(col), GetCellY(row), WHITE);
+	}
+};
+Texture2D Pear::texture;

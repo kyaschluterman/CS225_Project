@@ -4,14 +4,15 @@
 #include "raylib.h"
 #include "config.h"
 #include <iostream>
+using namespace std;
 
 class Segment {
 private:
 	int row, col;
-	Segment* seg_ahead;
-	Segment* seg_behind = nullptr;
 	Texture2D texture;
 public:
+	Segment* seg_ahead;
+	Segment* seg_behind = nullptr;
 	Segment(int col, int row, Segment* seg_ahead = nullptr) {
 		this->col = col;
 		this->row = row;
@@ -21,8 +22,6 @@ public:
 		}
 		texture = LoadTexture("snake.png");
 	}
-	Segment* GetSegmentBehind() { return seg_behind; }
-	Segment* GetSegmentAhead() { return seg_ahead; }
 	int GetRow() { return row; }
 	int GetCol() { return col; }
 	int GetDir() {
@@ -70,7 +69,7 @@ public:
 		this->col = col;
 		this->row = row;
 	}
-	void Draw() {
+	void Update() {
 		int cell_x = col * CELL_SIZE + CELL_ORIGIN_X;
 		int cell_y = row * CELL_SIZE + CELL_ORIGIN_Y;
 		DrawTexture(texture, cell_x, cell_y, WHITE);
@@ -80,8 +79,9 @@ public:
 class Snake {
 private:
 	int row, col;
+	int spawn_row, spawn_col;
 	int dir;
-	int count;
+	int length = 1;
 	Segment* head;
 	double speed = 10;
 	double init_time;
@@ -90,6 +90,8 @@ public:
 	Snake(int col, int row, int dir = UP) {
 		this->col = col;
 		this->row = row;
+		this->spawn_col = col;
+		this->spawn_row = row;
 		this->dir = dir;
 		this->init_time = GetTime();
 		head = new Segment(col, row);
@@ -97,7 +99,7 @@ public:
 	~Snake() {
 		Segment* current = head;
 		while (current != nullptr) {
-			Segment* next = current->GetSegmentBehind();
+			Segment* next = current->seg_behind;
 			delete current;
 			current = next;
 		}
@@ -127,11 +129,11 @@ public:
 		}
 
 		Segment* seg = GetTail();
-		Segment* seg_ahead = seg->GetSegmentAhead();
+		Segment* seg_ahead = seg->seg_ahead;
 		do {
 			seg->SetPos(seg_ahead->GetCol(),seg_ahead->GetRow());
 			seg = seg_ahead;
-			seg_ahead = seg_ahead->GetSegmentAhead();
+			seg_ahead = seg_ahead->seg_ahead;
 		} while (!seg->IsHead());
 		head->SetPos(col, row);
 	}
@@ -139,7 +141,16 @@ public:
 	Segment* GetTail() {
 		Segment* seg = head;
 		while (!seg->IsTail()) {
-			seg = seg->GetSegmentBehind();
+			seg = seg->seg_behind;
+		}
+		return seg;
+	}
+	Segment* GetSeg(int num) {
+		int seg_num = 0;
+		Segment* seg = head;
+		while (seg_num < num) {
+			seg = seg->seg_behind;
+			seg_num++;
 		}
 		return seg;
 	}
@@ -161,15 +172,50 @@ public:
 			new_tail_col--;
 		}
 		Segment* new_tail = new Segment(new_tail_col,new_tail_row,old_tail);
+		length++;
 	}
-	void DecreaseLength() {
+	void DecreaseLength(int amount) {
+		if (amount < length - 1) {
+			Segment* tail = GetTail();
+			for (int i = 0; i < amount; i++) {
+				Segment* new_tail = tail->seg_ahead;
+				delete tail;
+				tail = new_tail;
+				length--;
+			}
+			tail->seg_behind = nullptr;
+		}
+	}
+	void AddSpeed(int delta_speed) {
+		if (speed + delta_speed > 0) {
+			speed += delta_speed;
+		}
+	}
+	bool CollideSelf() {
+		bool collision = false;
+		Segment* seg = head->seg_behind;
+		while (seg != nullptr) {
+			if (col == seg->GetCol() && row == seg->GetRow()) {
+				return true;
+			}
+			seg = seg->seg_behind;
+		}
+		return collision;
+	}
+	void Reset() {
+		DecreaseLength(length - 2);  // This will decrease length to 1
+		col = spawn_col;
+		row = spawn_row;
+		dir = UP;
+		head->SetPos(col, row);  // Ensure head position is reset
+		cout << length<<endl;
+	}
 
-	}
-	void Draw() {
+	void Update() {
 		Segment* seg = head;
 		while (seg != nullptr) {
-			seg->Draw();
-			seg = seg->GetSegmentBehind();
+			seg->Update();
+			seg = seg->seg_behind;
 		}
 
 		delta_time = GetTime() - init_time;
