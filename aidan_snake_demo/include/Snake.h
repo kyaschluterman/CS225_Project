@@ -70,8 +70,8 @@ public:
 		this->row = row;
 	}
 	void Update() {
-		int cell_x = col * CELL_SIZE + CELL_ORIGIN_X;
-		int cell_y = row * CELL_SIZE + CELL_ORIGIN_Y;
+		int cell_x = GetCellX(col);
+		int cell_y = GetCellY(row);
 		DrawTexture(texture, cell_x, cell_y, WHITE);
 	}
 };
@@ -84,8 +84,8 @@ private:
 	int length = 1;
 	Segment* head;
 	double speed = 10;
-	double init_time;
-	double delta_time;
+	double init_time = 0;
+	double delta_time = 0;
 public:
 	Snake(int col, int row, int dir = UP) {
 		this->col = col;
@@ -207,6 +207,7 @@ public:
 		col = spawn_col;
 		row = spawn_row;
 		dir = UP;
+		speed = 10;
 		head->SetPos(col, row);  // Ensure head position is reset
 		cout << length<<endl;
 	}

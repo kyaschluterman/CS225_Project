@@ -4,12 +4,14 @@
 #include <cstdlib>
 #include <time.h>
 #include <vector>
+#include <typeinfo>
+#include <algorithm>
 #include "config.h"
 #include "Fruit.h"
 #include "Snake.h"
 using namespace std;
 
-void SpawnFruit(vector<Fruit*>& fruits, int amount, string type) {
+void SpawnFruit(vector<Fruit*>& fruits, int amount, const type_info& type) {
     for (int i = 0; i < amount; i++) {
         int col = rand() % COLS + 1;
         int row = rand() % ROWS + 1;
@@ -24,14 +26,21 @@ void SpawnFruit(vector<Fruit*>& fruits, int amount, string type) {
         }
 
         if (!collision) {
-            if (type == "apple") {
+            if (type == typeid(Apple)) {
                 fruits.push_back(new Apple(col, row));  // Store dynamically allocated Apple
             }
-            else if (type == "pear") {
+            else if (type == typeid(Pear)) {
                 fruits.push_back(new Pear(col, row));  // Store dynamically allocated Pear
             }
         }
     }
+}
+
+void ClearFruits(vector<Fruit*>& fruits) {
+    for (Fruit* fruit : fruits) {
+        delete fruit; // Free allocated memory
+    }
+    fruits.clear(); // Clear the vector
 }
 
 int main() {
@@ -59,8 +68,8 @@ int main() {
     snake->IncreaseLength();
 
     // Spawn Fruits
-    SpawnFruit(fruits, 5, "apple");
-    SpawnFruit(fruits, 5, "pear");
+    SpawnFruit(fruits, 5, typeid(Apple));
+    SpawnFruit(fruits, 5, typeid(Pear));
 
     InitAudioDevice();
     Music music = LoadMusicStream("music.mp3");
@@ -98,7 +107,8 @@ int main() {
             for (Fruit* fruit : fruits) {  // Use pointer access
                 if (fruit->Collide(*snake)) {
                     fruit->GetEatenBy(*snake);
-                    fruits.erase(std::remove(fruits.begin(), fruits.end(), fruit), fruits.end());
+                    fruits.erase(remove(fruits.begin(), fruits.end(), fruit), fruits.end());
+                    SpawnFruit(fruits, 1, typeid(*fruit));
                 }
             }
 
@@ -124,8 +134,9 @@ int main() {
             if (IsKeyDown(KEY_R)) {
                 game_over = false;
                 snake->Reset();
-                SpawnFruit(fruits, 5, "apple");
-                SpawnFruit(fruits, 5, "pear");
+                ClearFruits(fruits);
+                SpawnFruit(fruits, 5, typeid(Apple));
+                SpawnFruit(fruits, 5, typeid(Pear));
             }
         }
 
