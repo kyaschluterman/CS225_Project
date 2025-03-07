@@ -32,6 +32,9 @@ void SpawnFruit(vector<Fruit*>& fruits, int amount, const type_info& type) {
             else if (type == typeid(Pear)) {
                 fruits.push_back(new Pear(col, row));  // Store dynamically allocated Pear
             }
+            else if (type == typeid(GoldApple)) {
+                fruits.push_back(new GoldApple(col, row));
+            }
         }
     }
 }
@@ -55,21 +58,18 @@ int main() {
     Texture2D bg_texture = LoadTexture("grass.png");
     Apple::texture = LoadTexture("apple.png");
     Pear::texture = LoadTexture("pear.png");
+    GoldApple::texture = LoadTexture("gold_apple.png");
 
     // Objects
     vector<Fruit*> fruits;
 
-    Snake* snake = new Snake(1, 6);
-    snake->IncreaseLength();
-    snake->IncreaseLength();
-    snake->IncreaseLength();
-    snake->IncreaseLength();
-    snake->IncreaseLength();
-    snake->IncreaseLength();
+    Snake* snake = new Snake(1, 6, 1);
+    Snake* snake2 = new Snake(10, 10, 2);
 
     // Spawn Fruits
-    SpawnFruit(fruits, 5, typeid(Apple));
-    SpawnFruit(fruits, 5, typeid(Pear));
+    SpawnFruit(fruits, 3, typeid(Apple));
+    SpawnFruit(fruits, 3, typeid(Pear));
+    SpawnFruit(fruits, 1, typeid(GoldApple));
 
     InitAudioDevice();
     Music music = LoadMusicStream("music.mp3");
@@ -100,11 +100,9 @@ int main() {
         }
 
         if (!game_over) { // if snakes are alive
-            DrawText("SNAKE!", 10, 10, 25, BLACK);
+            DrawText("Snake!", 10, 10, 25, BLACK);
 
-            snake->Update();
-
-            for (Fruit* fruit : fruits) {  // Use pointer access
+            for (Fruit* fruit : fruits) {
                 if (fruit->Collide(*snake)) {
                     fruit->GetEatenBy(*snake);
                     fruits.erase(remove(fruits.begin(), fruits.end(), fruit), fruits.end());
@@ -112,20 +110,17 @@ int main() {
                 }
             }
 
-            if (IsKeyDown(KEY_W)) {
-                snake->Turn(UP);
-            }
-            else if (IsKeyDown(KEY_A)) {
-                snake->Turn(LEFT);
-            }
-            else if (IsKeyDown(KEY_S)) {
-                snake->Turn(DOWN);
-            }
-            else if (IsKeyDown(KEY_D)) {
-                snake->Turn(RIGHT);
+            for (Fruit* fruit : fruits) {
+                if (fruit->Collide(*snake2)) {
+                    fruit->GetEatenBy(*snake2);
+                    fruits.erase(remove(fruits.begin(), fruits.end(), fruit), fruits.end());
+                    SpawnFruit(fruits, 1, typeid(*fruit));
+                }
             }
 
-            if (snake->CollideSelf()) {
+            snake->Update();
+            snake2->Update();
+            if (snake->CollideSelf() || snake2->CollideSelf()) {
                 game_over = true;
             }
         }
@@ -134,9 +129,11 @@ int main() {
             if (IsKeyDown(KEY_R)) {
                 game_over = false;
                 snake->Reset();
+                snake2->Reset();
                 ClearFruits(fruits);
-                SpawnFruit(fruits, 5, typeid(Apple));
-                SpawnFruit(fruits, 5, typeid(Pear));
+                SpawnFruit(fruits, 3, typeid(Apple));
+                SpawnFruit(fruits, 3, typeid(Pear));
+                SpawnFruit(fruits, 1, typeid(GoldApple));
             }
         }
 
