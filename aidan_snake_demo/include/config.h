@@ -4,11 +4,11 @@
 #include <cstdlib>
 
 const int FPS = 60;
-const int WIDTH = 800;
-const int HEIGHT = 800;
+const int WIDTH = 1000;
+const int HEIGHT = 1000;
 const char* NAME = "Snake";
 const int CELL_SIZE = 16;
-const int ROWS = 30;
+const int ROWS = 40;
 const int COLS = 40;
 const int CENTER_X = WIDTH / 2;
 const int CENTER_Y = HEIGHT / 2;

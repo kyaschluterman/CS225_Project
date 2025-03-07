@@ -9,7 +9,8 @@ using namespace std;
 class Segment {
 private:
 	int row, col;
-	Texture2D texture;
+	Rectangle sourceRect = { 0, 0, 16, 16 };
+	Rectangle destRect = { 0, 0, 16, 16 };
 public:
 	Segment* seg_ahead;
 	Segment* seg_behind = nullptr;
@@ -20,30 +21,46 @@ public:
 		if (seg_ahead != nullptr) {
 			this->seg_ahead->AddSegmentBehind(this);
 		}
-		texture = LoadTexture("snake.png");
 	}
 	int GetRow() { return row; }
 	int GetCol() { return col; }
 	int GetDir() {
-		if (IsHead()) {
-			return UP; // for debugging, need to find way for head to know dir
-		}
-		else {
-			if (seg_ahead->GetCol() == col + 1 && seg_ahead->GetRow() == row) {
-				return RIGHT;
-			}
-			else if (seg_ahead->GetCol() == col - 1 && seg_ahead->GetRow() == row) {
+		if (IsHead() && seg_behind) {
+			if (seg_behind->GetCol() == col + 1) {
 				return LEFT;
 			}
-			else if (seg_ahead->GetCol() == col && seg_ahead->GetRow() == row + 1) {
+			else if (seg_behind->GetCol() == col - 1) {
+				return RIGHT;
+			}
+			else if (seg_behind->GetRow() == row + 1) {
+				return UP;
+			}
+			else if (seg_behind->GetRow() == row - 1) {
 				return DOWN;
 			}
-			else if (seg_ahead->GetCol() == col && seg_ahead->GetRow() == row - 1) {
+			else {
+				return UP; // for debugging
+			}
+		}
+		else if (!IsHead() && seg_ahead) {
+			if (seg_ahead->GetCol() == col + 1) {
+				return RIGHT;
+			}
+			else if (seg_ahead->GetCol() == col - 1) {
+				return LEFT;
+			}
+			else if (seg_ahead->GetRow() == row + 1) {
+				return DOWN;
+			}
+			else if (seg_ahead->GetRow() == row - 1) {
 				return UP;
 			}
 			else {
 				return UP; // for debugging
 			}
+		}
+		else {
+			return UP;
 		}
 	}
 	void AddSegmentBehind(Segment* seg_behind) {
@@ -69,10 +86,14 @@ public:
 		this->col = col;
 		this->row = row;
 	}
-	void Update() {
+	void Update(Texture2D texture, int dir) {
 		int cell_x = GetCellX(col);
 		int cell_y = GetCellY(row);
-		DrawTexture(texture, cell_x, cell_y, WHITE);
+		destRect.x = cell_x + texture.width/2;
+		destRect.y = cell_y + texture.height/2;
+		Vector2 origin = { destRect.width / 2, destRect.height / 2 };
+		float rotation = (dir == RIGHT) ? 90 : (dir == DOWN) ? 180 : (dir == LEFT) ? 270 : 0;
+		DrawTexturePro(texture, sourceRect, destRect, origin, rotation, WHITE);
 	}
 };
 
@@ -81,20 +102,36 @@ private:
 	int row, col;
 	int spawn_row, spawn_col;
 	int dir;
-	int length = 1;
+	int length = 2;
 	Segment* head;
 	double speed = 10;
 	double init_time = 0;
 	double delta_time = 0;
+	int player;
+	Texture2D head_texture, body_texture, tail_texture, turn_texture;
 public:
-	Snake(int col, int row, int dir = UP) {
+	Snake(int col, int row, int player = 1, int dir = UP) {
 		this->col = col;
 		this->row = row;
 		this->spawn_col = col;
 		this->spawn_row = row;
 		this->dir = dir;
 		this->init_time = GetTime();
+		this->player = player;
 		head = new Segment(col, row);
+		Segment* tail = new Segment(col, row+1, head);
+		if (player == 1) {
+			head_texture = LoadTexture("head.png");
+			body_texture = LoadTexture("body.png");
+			tail_texture = LoadTexture("tail.png");
+			turn_texture = LoadTexture("turn.png");
+		}
+		else if (player == 2) {
+			head_texture = LoadTexture("head.png");
+			body_texture = LoadTexture("body.png");
+			tail_texture = LoadTexture("tail.png");
+			turn_texture = LoadTexture("turn.png");
+		}
 	}
 	~Snake() {
 		Segment* current = head;
@@ -106,6 +143,7 @@ public:
 	}
 	int GetCol() { return col; }
 	int GetRow() { return row; }
+	int GetLength() { return length; }
 	void Turn(int dir) {
 		if ((dir == UP && this->dir == DOWN) || (dir == DOWN && this->dir == UP) || (dir == LEFT && this->dir == RIGHT) || (dir == RIGHT && this->dir == LEFT)) {
 			// do nothing
@@ -154,25 +192,27 @@ public:
 		}
 		return seg;
 	}
-	void IncreaseLength() {
-		Segment* old_tail = GetTail();
-		int new_tail_col = old_tail->GetCol();
-		int new_tail_row = old_tail->GetRow();
-		std::cout << old_tail->GetDir() << std::endl;
-		if (old_tail->GetDir() == UP) {
-			new_tail_row++;
+	void IncreaseLength(int amount) {
+		for (int i = 0; i < amount; i++) {
+			Segment* old_tail = GetTail();
+			int new_tail_col = old_tail->GetCol();
+			int new_tail_row = old_tail->GetRow();
+			std::cout << old_tail->GetDir() << std::endl;
+			if (old_tail->GetDir() == UP) {
+				new_tail_row++;
+			}
+			else if (old_tail->GetDir() == DOWN) {
+				new_tail_row--;
+			}
+			else if (old_tail->GetDir() == LEFT) {
+				new_tail_col++;
+			}
+			else if (old_tail->GetDir() == RIGHT) {
+				new_tail_col--;
+			}
+			Segment* new_tail = new Segment(new_tail_col, new_tail_row, old_tail);
+			length++;
 		}
-		else if (old_tail->GetDir() == DOWN) {
-			new_tail_row--;
-		}
-		else if (old_tail->GetDir() == LEFT) {
-			new_tail_col++;
-		}
-		else if (old_tail->GetDir() == RIGHT) {
-			new_tail_col--;
-		}
-		Segment* new_tail = new Segment(new_tail_col,new_tail_row,old_tail);
-		length++;
 	}
 	void DecreaseLength(int amount) {
 		if (amount < length - 1) {
@@ -213,9 +253,67 @@ public:
 	}
 
 	void Update() {
+		if (player == 1) {
+			if (IsKeyDown(KEY_W)) {
+				Turn(UP);
+			}
+			else if (IsKeyDown(KEY_A)) {
+				Turn(LEFT);
+			}
+			else if (IsKeyDown(KEY_S)) {
+				Turn(DOWN);
+			}
+			else if (IsKeyDown(KEY_D)) {
+				Turn(RIGHT);
+			}
+		}
+		else if (player == 2) {
+			if (IsKeyDown(KEY_I)) {
+				Turn(UP);
+			}
+			else if (IsKeyDown(KEY_J)) {
+				Turn(LEFT);
+			}
+			else if (IsKeyDown(KEY_K)) {
+				Turn(DOWN);
+			}
+			else if (IsKeyDown(KEY_L)) {
+				Turn(RIGHT);
+			}
+		}
+
 		Segment* seg = head;
 		while (seg != nullptr) {
-			seg->Update();
+			if (seg->IsHead()) {
+				seg->Update(head_texture, seg->GetDir());
+			}
+			else if (seg->IsTail()) {
+				seg->Update(tail_texture, seg->GetDir());
+			}
+			else {
+				int ahead_col = seg->seg_ahead->GetCol();
+				int ahead_row = seg->seg_ahead->GetRow();
+				int behind_col = seg->seg_behind->GetCol();
+				int behind_row = seg->seg_behind->GetRow();
+				if (ahead_col == seg->GetCol() && behind_col == seg->GetCol()) { // if segs in same column
+					seg->Update(body_texture, UP);
+				}
+				else if (ahead_row == seg->GetRow() && behind_row == seg->GetRow()) { // if segs in same row
+					seg->Update(body_texture, RIGHT);
+				}
+				else if ((ahead_col == seg->GetCol() + 1 && behind_col == seg->GetCol() && behind_row == seg->GetRow() + 1) || (behind_col == seg->GetCol() + 1 && ahead_col == seg->GetCol() && ahead_row == seg->GetRow() + 1)) { // if turning from up to right
+					seg->Update(turn_texture, UP);
+				}
+				else if ((ahead_col == seg->GetCol() + 1 && behind_col == seg->GetCol() && behind_row == seg->GetRow() - 1) || (behind_col == seg->GetCol() + 1 && ahead_col == seg->GetCol() && ahead_row == seg->GetRow() - 1)) { // if turning from down to right
+					seg->Update(turn_texture, LEFT);
+				}
+				else if ((ahead_col == seg->GetCol() - 1 && behind_col == seg->GetCol() && behind_row == seg->GetRow() + 1) || (behind_col == seg->GetCol() - 1 && ahead_col == seg->GetCol() && ahead_row == seg->GetRow() + 1)) { // if turning from up to left
+					seg->Update(turn_texture, RIGHT);
+				}
+				else if ((ahead_col == seg->GetCol() - 1 && behind_col == seg->GetCol() && behind_row == seg->GetRow() - 1) || (behind_col == seg->GetCol() - 1 && ahead_col == seg->GetCol() && ahead_row == seg->GetRow() - 1)) { // if turning from down to left
+					seg->Update(turn_texture, DOWN);
+				}
+			}
 			seg = seg->seg_behind;
 		}
 

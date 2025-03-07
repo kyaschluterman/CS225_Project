@@ -43,7 +43,7 @@ public:
 		
 	}
 	void GetEatenBy(Snake & snake) override {
-		snake.IncreaseLength();
+		snake.IncreaseLength(length_to_add);
 		snake.AddSpeed(speed_to_increase);
 	}
 	void Draw() override {
@@ -70,3 +70,22 @@ public:
 	}
 };
 Texture2D Pear::texture;
+
+class GoldApple : public Fruit {
+private:
+	int length_to_add = 3;
+	int speed_to_increase = 3;
+public:
+	static Texture2D texture;
+	GoldApple(int col, int row) : Fruit(col, row) {
+
+	}
+	void GetEatenBy(Snake& snake) override {
+		snake.IncreaseLength(length_to_add);
+		snake.AddSpeed(speed_to_increase);
+	}
+	void Draw() override {
+		DrawTexture(texture, GetCellX(col), GetCellY(row), WHITE);
+	}
+};
+Texture2D GoldApple::texture;
