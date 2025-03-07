@@ -111,7 +111,7 @@ private:
 	int player;
 	Texture2D head_texture, body_texture, tail_texture, turn_texture;
 public:
-	Snake(int col, int row, int player = 1, int dir = UP) {
+	Snake(int col, int row, int player = 1, int dir = RIGHT) {
 		this->col = col;
 		this->row = row;
 		this->spawn_col = col;
@@ -247,7 +247,7 @@ public:
 		DecreaseLength(length - 2);  // This will decrease length to 1
 		col = spawn_col;
 		row = spawn_row;
-		dir = UP;
+		dir = RIGHT;
 		speed = 10;
 		head->SetPos(col, row);  // Ensure head position is reset
 		cout << length<<endl;

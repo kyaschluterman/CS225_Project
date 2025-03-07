@@ -135,6 +135,11 @@ int main() {
                     game_over = true;
                 }
             }
+            for(int i=0; i<NUM_WALLS; i++){
+                if (snake2->CollideWall(allwalls[i])){
+                    game_over = true;
+                }
+            }
         }
         else { // if snake dies
             DrawText("GAME OVER! Press 'R' to Restart.", 10, 10, 25, BLACK);
@@ -146,6 +151,10 @@ int main() {
                 SpawnFruit(fruits, 3, typeid(Apple));
                 SpawnFruit(fruits, 3, typeid(Pear));
                 SpawnFruit(fruits, 1, typeid(GoldApple));
+                for(int i=0;i<NUM_WALLS;i++){
+                    allwalls[i].Reset();
+                }
+                
             }
         }
 

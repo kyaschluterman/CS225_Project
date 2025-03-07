@@ -18,6 +18,7 @@ public:
     Obstacle();
     void Draw();
     bool Collision(int,int);
+    void Reset();
 };
 
 Obstacle::Obstacle(){
@@ -25,6 +26,11 @@ Obstacle::Obstacle(){
     col = rand()%COLS + 1;
     row = rand()%ROWS + 1;
     texture = LoadTexture("snake.png");
+}
+
+void Obstacle::Reset(){
+    col = rand()%COLS + 1;
+    row = rand()%ROWS + 1;
 }
 
 bool Obstacle::Collision(int c, int r){
