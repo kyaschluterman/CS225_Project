@@ -63,6 +63,8 @@ int main() {
     // Objects
     vector<Fruit*> fruits;
 
+    Obstacle allwalls[NUM_WALLS];
+
     Snake* snake = new Snake(1, 6, 1);
     Snake* snake2 = new Snake(10, 10, 2);
 
@@ -99,6 +101,10 @@ int main() {
             fruit->Draw();  // Call the correct virtual method
         }
 
+        for(int i=0; i<NUM_WALLS; i++){
+            allwalls[i].Draw();
+        }
+
         if (!game_over) { // if snakes are alive
             DrawText("Snake!", 10, 10, 25, BLACK);
 
@@ -122,6 +128,12 @@ int main() {
             snake2->Update();
             if (snake->CollideSelf() || snake2->CollideSelf()) {
                 game_over = true;
+            }
+
+            for(int i=0; i<NUM_WALLS; i++){
+                if (snake->CollideWall(allwalls[i])){
+                    game_over = true;
+                }
             }
         }
         else { // if snake dies

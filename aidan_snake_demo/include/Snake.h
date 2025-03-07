@@ -5,6 +5,7 @@
 #include "config.h"
 #include <iostream>
 using namespace std;
+#include "Obstacle.h"
 
 class Segment {
 private:
@@ -250,6 +251,16 @@ public:
 		speed = 10;
 		head->SetPos(col, row);  // Ensure head position is reset
 		cout << length<<endl;
+	}
+
+	bool CollideWall(Obstacle o){
+		if(o.Collision(col,row)){
+			return true;
+		}
+		if(row>=ROWS+1 || row<=0 || col>=COLS+1 || col<=0){
+			return true;
+		}
+		return false;
 	}
 
 	void Update() {

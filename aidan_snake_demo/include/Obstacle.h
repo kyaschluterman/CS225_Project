@@ -3,39 +3,42 @@
 #include <string>
 #include <cstdlib>
 #include "config.h"
-
 #include <iostream>
+
+using namespace std;
+
+
 
 class Obstacle{
 private:
-    Texture2D texture;
+    
     int col, row;
 public:
+    Texture2D texture;
     Obstacle();
     void Draw();
     bool Collision(int,int);
 };
 
 Obstacle::Obstacle(){
-    srand(time(0));
-    col = rand()%COLS;
-    row = rand()%ROWS;
+
+    col = rand()%COLS + 1;
+    row = rand()%ROWS + 1;
     texture = LoadTexture("snake.png");
 }
 
-bool Obstacle::Collision(int x, int y){
-    if(x==col && y==row){
+bool Obstacle::Collision(int c, int r){
+    if(c==col && r==row){
         return true;
     }
     return false;
 }
 
 void  Obstacle::Draw(){
-    int cell_x = col * CELL_SIZE + CELL_ORIGIN_X;
-    int cell_y = row * CELL_SIZE + CELL_ORIGIN_Y;
-    DrawTexture(texture, cell_x, cell_y, WHITE);
-
+    DrawTexture(texture, GetCellX(col), GetCellY(row), WHITE);
 }
 
 
-
+struct teststruct{
+    int a;
+};

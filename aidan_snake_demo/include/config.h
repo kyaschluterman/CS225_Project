@@ -15,6 +15,7 @@ const int CENTER_Y = HEIGHT / 2;
 const int CELL_ORIGIN_X = CENTER_X - COLS * CELL_SIZE / 2;
 const int CELL_ORIGIN_Y = CENTER_Y - ROWS * CELL_SIZE / 2;
 const int MAX_FRUIT = ROWS * COLS;
+const int NUM_WALLS = 15;
 enum DIR {UP, DOWN, LEFT, RIGHT};
 
 int GetCellX(int col) {
