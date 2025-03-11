@@ -9,6 +9,7 @@
 #include "config.h"
 #include "Fruit.h"
 #include "Snake.h"
+#include "Obstacle.h"
 using namespace std;
 
 void SpawnFruit(vector<Fruit*>& fruits, int amount, const type_info& type) {
@@ -53,6 +54,8 @@ int main() {
     SetTargetFPS(FPS);
     SearchAndSetResourceDir("resources");
     bool game_over = false;
+    bool snake1_wins = false;
+    bool snake2_wins = false;
 
     // Textures
     Texture2D bg_texture = LoadTexture("grass.png");
@@ -101,7 +104,7 @@ int main() {
             fruit->Draw();  // Call the correct virtual method
         }
 
-        for(int i=0; i<NUM_WALLS; i++){
+        for (int i = 0; i < NUM_WALLS; i++) {
             allwalls[i].Draw();
         }
 
@@ -126,35 +129,50 @@ int main() {
 
             snake->Update();
             snake2->Update();
-            if (snake->CollideSelf() || snake2->CollideSelf()) {
+            if (snake->CollideSelf() || snake2->CollideSnake(*snake)) {
+                snake1_wins = true;
+                game_over = true;
+            }
+            
+            if (snake2->CollideSelf() || snake->CollideSnake(*snake2)) {
+                snake2_wins = true;
                 game_over = true;
             }
 
-            for(int i=0; i<NUM_WALLS; i++){
-                if (snake->CollideWall(allwalls[i])){
+            for (int i = 0; i < NUM_WALLS; i++) {
+                if (snake->CollideWall(allwalls[i])) {
+                    snake2_wins = true;
                     game_over = true;
                 }
             }
-            for(int i=0; i<NUM_WALLS; i++){
-                if (snake2->CollideWall(allwalls[i])){
+            for (int i = 0; i < NUM_WALLS; i++) {
+                if (snake2->CollideWall(allwalls[i])) {
                     game_over = true;
+                    snake1_wins = true;
                 }
             }
         }
         else { // if snake dies
-            DrawText("GAME OVER! Press 'R' to Restart.", 10, 10, 25, BLACK);
+            if (snake1_wins) {
+                DrawText("Player 1 Wins!", 10, 10, 25, BLACK);
+            }
+            else if (snake2_wins) {
+                DrawText("Player 2 Wins!", 10, 10, 25, BLACK);
+            }
+            DrawText("Press 'R' to Restart.", 10, 40, 25, BLACK);
             if (IsKeyDown(KEY_R)) {
                 game_over = false;
+                snake1_wins = false;
+                snake2_wins = false;
                 snake->Reset();
                 snake2->Reset();
                 ClearFruits(fruits);
                 SpawnFruit(fruits, 3, typeid(Apple));
                 SpawnFruit(fruits, 3, typeid(Pear));
                 SpawnFruit(fruits, 1, typeid(GoldApple));
-                for(int i=0;i<NUM_WALLS;i++){
+                for (int i = 0;i < NUM_WALLS;i++) {
                     allwalls[i].Reset();
                 }
-                
             }
         }
 
