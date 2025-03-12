@@ -7,14 +7,20 @@
 #include "Obstacle.h"
 using namespace std;
 
+// Class for segment of snake
 class Segment {
 private:
+	// Current map coordinates 
 	int row, col;
-	Rectangle sourceRect = { 0, 0, 16, 16 };
-	Rectangle destRect = { 0, 0, 16, 16 };
+	// Base rectangles for drawing textures using DrawTexturePro
+	Rectangle source_rect = { 0, 0, 16, 16 };
+	Rectangle dest_rect = { 0, 0, 16, 16 };
 public:
+	// Pointer to segment ahead of this segment (nullptr if none)
 	Segment* seg_ahead;
+	// Pointer to segment behind this segment (nullptr if none)
 	Segment* seg_behind = nullptr;
+	// Constructor
 	Segment(int col, int row, Segment* seg_ahead = nullptr) {
 		this->col = col;
 		this->row = row;
@@ -23,8 +29,11 @@ public:
 			this->seg_ahead->AddSegmentBehind(this);
 		}
 	}
+	// Returns row position on map
 	int GetRow() { return row; }
+	// Returns column position on map
 	int GetCol() { return col; }
+	// Returns direction segment is moving
 	int GetDir() {
 		if (IsHead() && seg_behind) {
 			if (seg_behind->GetCol() == col + 1) {
@@ -64,9 +73,11 @@ public:
 			return UP;
 		}
 	}
+	// Links an existing segment behind this
 	void AddSegmentBehind(Segment* seg_behind) {
 		this->seg_behind = seg_behind;
 	}
+	// Returns whether segment is head of snake
 	bool IsHead() {
 		if (seg_ahead == nullptr) {
 			return true;
@@ -75,6 +86,7 @@ public:
 			return false;
 		}
 	}
+	// Returns whether segment is tail of snake
 	bool IsTail() {
 		if (seg_behind == nullptr) {
 			return true;
@@ -83,35 +95,49 @@ public:
 			return false;
 		}
 	}
+	// Sets map coordinates of segment
 	void SetPos(int col, int row) {
 		this->col = col;
 		this->row = row;
 	}
+	// Updates segment appearance on screen
 	void Update(Texture2D texture, int dir) {
 		int cell_x = GetCellX(col);
 		int cell_y = GetCellY(row);
-		destRect.x = cell_x + texture.width / 2;
-		destRect.y = cell_y + texture.height / 2;
-		Vector2 origin = { destRect.width / 2, destRect.height / 2 };
+		dest_rect.x = cell_x + texture.width / 2;
+		dest_rect.y = cell_y + texture.height / 2;
+		Vector2 origin = { dest_rect.width / 2, dest_rect.height / 2 };
 		float rotation = (dir == RIGHT) ? 90 : (dir == DOWN) ? 180 : (dir == LEFT) ? 270 : 0;
-		DrawTexturePro(texture, sourceRect, destRect, origin, rotation, WHITE);
+		DrawTexturePro(texture, source_rect, dest_rect, origin, rotation, WHITE);
 	}
 };
 
+// Class for snake
 class Snake {
 private:
+	// Current map coordinates of snake head
 	int row, col;
+	// Initial coordinates of snake head
 	int spawn_row, spawn_col;
+	// Current direction snake is moving
 	int dir;
+	// Number of segments in snake
 	int length = 2;
+	// Pointer to foremost segment
 	Segment* head;
+	// Current speed of snake in map units per second
 	double speed = 5;
+	// Initial speed of snake in map units per second
 	double spawn_speed = speed;
+	// time variables to manage snake speed 
 	double init_time = 0;
 	double delta_time = 0;
+	// player number (1 or 2)
 	int player;
+	// textures for snake segments
 	Texture2D head_texture, body_texture, tail_texture, turn_texture;
 public:
+	// Constructor
 	Snake(int col, int row, int player = 1, int dir = RIGHT) {
 		this->col = col;
 		this->row = row;
@@ -135,6 +161,7 @@ public:
 			turn_texture = LoadTexture("turn2.png");
 		}
 	}
+	// Destructor
 	~Snake() {
 		Segment* current = head;
 		while (current != nullptr) {
@@ -143,9 +170,13 @@ public:
 			current = next;
 		}
 	}
+	// Returns column position on map
 	int GetCol() { return col; }
+	// Returns row position on map
 	int GetRow() { return row; }
+	// Returns number of segments in snake
 	int GetLength() { return length; }
+	// Changes the direction of the snake's movement
 	void Turn(int dir) {
 		if ((dir == UP && this->dir == DOWN) || (dir == DOWN && this->dir == UP) || (dir == LEFT && this->dir == RIGHT) || (dir == RIGHT && this->dir == LEFT)) {
 			// do nothing
@@ -154,6 +185,7 @@ public:
 			this->dir = dir;
 		}
 	}
+	// Moves the snake forward one unit in the direction of movement
 	void Move() {
 		if (dir == UP) {
 			row--;
@@ -167,7 +199,6 @@ public:
 		else if (dir == RIGHT) {
 			col++;
 		}
-
 		Segment* seg = GetTail();
 		Segment* seg_ahead = seg->seg_ahead;
 		do {
@@ -177,6 +208,7 @@ public:
 		} while (!seg->IsHead());
 		head->SetPos(col, row);
 	}
+	// Returns a pointer to the snakes foremost segment
 	Segment* GetHead() { return head; }
 	Segment* GetTail() {
 		Segment* seg = head;
@@ -185,6 +217,7 @@ public:
 		}
 		return seg;
 	}
+	// Returns pointer to (num)th segment of snake
 	Segment* GetSeg(int num) {
 		int seg_num = 0;
 		Segment* seg = head;
@@ -194,6 +227,7 @@ public:
 		}
 		return seg;
 	}
+	// Adds (amount) segments to rear of snake
 	void IncreaseLength(int amount) {
 		for (int i = 0; i < amount; i++) {
 			Segment* old_tail = GetTail();
@@ -216,6 +250,7 @@ public:
 			length++;
 		}
 	}
+	// Deletes (amount) segments from rear of snake
 	void DecreaseLength(int amount) {
 		if (amount < length - 1) {
 			Segment* tail = GetTail();
@@ -228,11 +263,13 @@ public:
 			tail->seg_behind = nullptr;
 		}
 	}
+	// Increases speed by (delta_speed), decreases if (delta_speed) is negative
 	void AddSpeed(int delta_speed) {
 		if (speed + delta_speed > 0) {
 			speed += delta_speed;
 		}
 	}
+	// Returns whether snake head is at same position as another of its segments
 	bool CollideSelf() {
 		bool collision = false;
 		Segment* seg = head->seg_behind;
@@ -244,6 +281,7 @@ public:
 		}
 		return collision;
 	}
+	// Returns whether snake head is outside of map bounds and/or at same position as obstacle object (o)
 	bool CollideWall(Obstacle & o) {
 		if (o.Collision(col, row)) {
 			return true;
@@ -253,6 +291,7 @@ public:
 		}
 		return false;
 	}
+	// Returns whether snake head is at same position as a segment of another snake
 	bool CollideSnake(Snake & s) {
 		bool collision = false;
 		Segment* seg = s.head;
@@ -264,6 +303,7 @@ public:
 		}
 		return collision;
 	}
+	// Resets snake position, length, and speed
 	void Reset() {
 		DecreaseLength(length - 2);  // This will decrease length to 1
 		col = spawn_col;
@@ -273,6 +313,7 @@ public:
 		head->SetPos(col, row);  // Ensure head position is reset
 		cout << length << endl;
 	}
+	// Updates snake appearance on screen
 	void Update() {
 		if (player == 1) {
 			if (IsKeyDown(KEY_W)) {
@@ -302,7 +343,6 @@ public:
 				Turn(RIGHT);
 			}
 		}
-
 		Segment* seg = head;
 		while (seg != nullptr) {
 			if (seg->IsHead()) {
@@ -337,7 +377,6 @@ public:
 			}
 			seg = seg->seg_behind;
 		}
-
 		delta_time = GetTime() - init_time;
 		if (delta_time > (1 / speed)) {
 			init_time = GetTime();
