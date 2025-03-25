@@ -12,6 +12,9 @@
 #include "Obstacle.h"
 using namespace std;
 
+#include <iostream>
+#include <fstream>
+
 const int FPS = 60;
 const int WIDTH = 1000;
 const int HEIGHT = 1000;
@@ -102,6 +105,8 @@ int main() {
     Music music = LoadMusicStream("music.mp3");
     PlayMusicStream(music);
 
+    int writeScore = 0;
+
     while (!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground(RAYWHITE);
@@ -131,6 +136,7 @@ int main() {
         }
 
         if (!game_over) { // if snakes are alive
+            writeScore = 1;
             DrawText("Snake!", 10, 10, 25, BLACK);
 
             for (Fruit* fruit : fruits) {
@@ -175,6 +181,18 @@ int main() {
             }
         }
         else { // if snake dies
+
+            if(writeScore){
+                writeScore = 0;
+                std::string filename = "Scores.txt";
+                std::ofstream outfile(filename, std::ios::app);
+                if (outfile.is_open()) {
+                    outfile << "Player 1 score: " << snake->GetLength() << ", Player 2 score: " << snake2->GetLength() << endl;
+                    outfile.close();
+                }
+            }
+
+
             if (snake1_wins) {
                 DrawText("Player 1 Wins!", 10, 10, 25, BLACK);
             }
@@ -183,6 +201,8 @@ int main() {
             }
             DrawText("Press 'R' to Restart.", 10, 40, 25, BLACK);
             if (IsKeyDown(KEY_R)) {
+
+                
                 game_over = false;
                 snake1_wins = false;
                 snake2_wins = false;
