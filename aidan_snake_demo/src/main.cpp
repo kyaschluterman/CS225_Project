@@ -187,7 +187,7 @@ int main() {
                 std::string filename = "Scores.txt";
                 std::ofstream outfile(filename, std::ios::app);
                 if (outfile.is_open()) {
-                    outfile << "Player 1 score: " << snake->GetLength() << ", Player 2 score: " << snake2->GetLength() << endl;
+                    outfile << "Player 1 score: " << snake->GetLength() -2<< ", Player 2 score: " << snake2->GetLength()-2 << endl;
                     outfile.close();
                 }
             }
