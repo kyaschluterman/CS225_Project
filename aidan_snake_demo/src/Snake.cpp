@@ -1,7 +1,6 @@
 #include "Snake.h"
 using namespace std;
 
-// Constructor
 Segment::Segment(int col, int row, Segment* seg_ahead) {
 	this->col = col;
 	this->row = row;
@@ -10,6 +9,7 @@ Segment::Segment(int col, int row, Segment* seg_ahead) {
 		this->seg_ahead->AddSegmentBehind(this);
 	}
 }
+
 int Segment::GetDir() {
 	if (IsHead() && seg_behind) {
 		if (seg_behind->GetCol() == col + 1) {
@@ -49,7 +49,7 @@ int Segment::GetDir() {
 		return UP;
 	}
 }
-// Returns whether segment is head of snake
+
 bool Segment::IsHead() {
 	if (seg_ahead == nullptr) {
 		return true;
@@ -58,7 +58,7 @@ bool Segment::IsHead() {
 		return false;
 	}
 }
-// Returns whether segment is tail of snake
+
 bool Segment::IsTail() {
 	if (seg_behind == nullptr) {
 		return true;
@@ -67,12 +67,12 @@ bool Segment::IsTail() {
 		return false;
 	}
 }
-// Sets map coordinates of segment
+
 void Segment::SetPos(int col, int row) {
 	this->col = col;
 	this->row = row;
 }
-// Updates segment appearance on screen
+
 void Segment::Update(Texture2D texture, int dir) {
 	int cell_x = GetCellX(col);
 	int cell_y = GetCellY(row);
@@ -83,7 +83,6 @@ void Segment::Update(Texture2D texture, int dir) {
 	DrawTexturePro(texture, source_rect, dest_rect, origin, rotation, WHITE);
 }
 
-// Constructor
 Snake::Snake(int col, int row, int player, int dir) {
 	this->col = col;
 	this->row = row;
@@ -107,7 +106,7 @@ Snake::Snake(int col, int row, int player, int dir) {
 		turn_texture = LoadTexture("turn2.png");
 	}
 }
-// Destructor
+
 Snake::~Snake() {
 	Segment* current = head;
 	while (current != nullptr) {
@@ -116,7 +115,7 @@ Snake::~Snake() {
 		current = next;
 	}
 }
-// Changes the direction of the snake's movement
+
 void Snake::Turn(int dir) {
 	if ((dir == UP && this->dir == DOWN) || (dir == DOWN && this->dir == UP) || (dir == LEFT && this->dir == RIGHT) || (dir == RIGHT && this->dir == LEFT)) {
 		// do nothing
@@ -125,7 +124,7 @@ void Snake::Turn(int dir) {
 		this->dir = dir;
 	}
 }
-// Moves the snake forward one unit in the direction of movement
+
 void Snake::Move() {
 	if (dir == UP) {
 		row--;
@@ -148,6 +147,7 @@ void Snake::Move() {
 	} while (!seg->IsHead());
 	head->SetPos(col, row);
 }
+
 Segment* Snake::GetTail() {
 	Segment* seg = head;
 	while (!seg->IsTail()) {
@@ -155,7 +155,7 @@ Segment* Snake::GetTail() {
 	}
 	return seg;
 }
-// Returns pointer to (num)th segment of snake
+
 Segment* Snake::GetSeg(int num) {
 	int seg_num = 0;
 	Segment* seg = head;
@@ -165,7 +165,7 @@ Segment* Snake::GetSeg(int num) {
 	}
 	return seg;
 }
-// Adds (amount) segments to rear of snake
+
 void Snake::operator+=(const int amount) {
 	for (int i = 0; i < amount; i++) {
 		Segment* old_tail = GetTail();
@@ -188,7 +188,7 @@ void Snake::operator+=(const int amount) {
 		length++;
 	}
 }
-// Adds one segment to rear of snake
+
 Snake& Snake::operator++(int) {
 	Segment* old_tail = GetTail();
 	int new_tail_col = old_tail->GetCol();
@@ -210,7 +210,7 @@ Snake& Snake::operator++(int) {
 	length++;
 	return *this;
 }
-// Deletes (amount) segments from rear of snake
+
 void Snake::operator-=(const int amount) {
 	if (amount < length - 1) {
 		Segment* tail = GetTail();
@@ -223,7 +223,7 @@ void Snake::operator-=(const int amount) {
 		tail->seg_behind = nullptr;
 	}
 }
-// Deletes (amount) segments from rear of snake
+
 Snake& Snake::operator--(int) {
 	if (length > 2) {
 		Segment* tail = GetTail();
@@ -235,13 +235,13 @@ Snake& Snake::operator--(int) {
 	}
 	return *this;
 }
-// Increases speed by (delta_speed), decreases if (delta_speed) is negative
+
 void Snake::AddSpeed(int delta_speed) {
 	if (speed + delta_speed > 0) {
 		speed += delta_speed;
 	}
 }
-// Returns whether snake head is at same position as another of its segments
+
 bool Snake::CollideSelf() {
 	bool collision = false;
 	Segment* seg = head->seg_behind;
@@ -253,7 +253,7 @@ bool Snake::CollideSelf() {
 	}
 	return collision;
 }
-// Returns whether snake head is outside of map bounds and/or at same position as obstacle object (o)
+
 bool Snake::CollideWall(Obstacle& o) {
 	if (o.Collision(col, row)) {
 		return true;
@@ -263,7 +263,7 @@ bool Snake::CollideWall(Obstacle& o) {
 	}
 	return false;
 }
-// Returns whether snake head is at same position as a segment of another snake
+
 bool Snake::CollideSnake(Snake& s) {
 	bool collision = false;
 	Segment* seg = s.head;
@@ -275,7 +275,7 @@ bool Snake::CollideSnake(Snake& s) {
 	}
 	return collision;
 }
-// Resets snake position, length, and speed
+
 void Snake::Reset() {
 	*this -= (length - 2);  // This will decrease length to 1
 	col = spawn_col;
@@ -285,7 +285,7 @@ void Snake::Reset() {
 	head->SetPos(col, row);  // Ensure head position is reset
 	cout << length << endl;
 }
-// Updates snake appearance on screen
+
 void Snake::Update() {
 	if (player == 1) {
 		if (IsKeyDown(KEY_W)) {

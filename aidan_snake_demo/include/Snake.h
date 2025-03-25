@@ -11,16 +11,12 @@ using namespace std;
 // Class for segment of snake
 class Segment {
 private:
-	// Current map coordinates 
-	int row, col;
-	// Base rectangles for drawing textures using DrawTexturePro
-	Rectangle source_rect = { 0, 0, 16, 16 };
-	Rectangle dest_rect = { 0, 0, 16, 16 };
+	int row, col; // Current map coordinates
+	Rectangle source_rect = { 0, 0, 16, 16 }; // Source rect for drawing textures using DrawTexturePro
+	Rectangle dest_rect = { 0, 0, 16, 16 }; // Destination rect for drawing textures using DrawTexturePro
 public:
-	// Pointer to segment ahead of this segment (nullptr if none)
-	Segment* seg_ahead;
-	// Pointer to segment behind this segment (nullptr if none)
-	Segment* seg_behind = nullptr;
+	Segment* seg_ahead; // Pointer to segment ahead of this segment (nullptr if none)
+	Segment* seg_behind = nullptr; // Pointer to segment behind this segment (nullptr if none)
 	// Constructor
 	Segment(int col, int row, Segment* seg_ahead = nullptr);
 	// Returns row position on map
@@ -44,27 +40,17 @@ public:
 // Class for snake
 class Snake {
 private:
-	// Current map coordinates of snake head
-	int row, col;
-	// Initial coordinates of snake head
-	int spawn_row, spawn_col;
-	// Current direction snake is moving
-	int dir;
-	// Number of segments in snake
-	int length = 2;
-	// Pointer to foremost segment
-	Segment* head;
-	// Current speed of snake in map units per second
-	double speed = 5;
-	// Initial speed of snake in map units per second
-	double spawn_speed = speed;
-	// time variables to manage snake speed 
-	double init_time = 0;
-	double delta_time = 0;
-	// player number (1 or 2)
-	int player;
-	// textures for snake segments
-	Texture2D head_texture, body_texture, tail_texture, turn_texture;
+	int row, col; // Current map coordinates of snake head
+	int spawn_row, spawn_col; // Initial coordinates of snake head
+	int dir; // Current direction snake is moving
+	int length = 2; // Number of segments in snake
+	Segment* head; // Pointer to foremost segment
+	double speed = 5; // Current speed of snake in map cells per second
+	double spawn_speed = speed; // Initial speed of snake in map units per second
+	double init_time = 0; // Timestamp to 
+	double delta_time = 0; // Time since last recorded timestamp
+	int player; // Player number (1 or 2)
+	Texture2D head_texture, body_texture, tail_texture, turn_texture; // Textures for snake segments
 public:
 	// Constructor
 	Snake(int col, int row, int player = 1, int dir = RIGHT);
