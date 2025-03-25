@@ -14,6 +14,7 @@ using namespace std;
 
 #include <iostream>
 #include <fstream>
+#include <string>
 
 const int FPS = 60;
 const int WIDTH = 1000;
@@ -139,6 +140,11 @@ int main() {
             writeScore = 1;
             DrawText("Snake!", 10, 10, 25, BLACK);
 
+            string str1 = "Snake 1 score: " + to_string(snake->GetLength()-2);
+            string str2 = "Snake 2 score: " + to_string(snake2->GetLength()-2);
+            DrawText( str1.c_str(), 260, 870, 25, BLACK);
+            DrawText( str2.c_str(), 550, 870, 25, BLACK);
+
             for (Fruit* fruit : fruits) {
                 if (fruit->Collide(*snake)) {
                     fruit->GetEatenBy(*snake);
@@ -187,10 +193,13 @@ int main() {
                 std::string filename = "Scores.txt";
                 std::ofstream outfile(filename, std::ios::app);
                 if (outfile.is_open()) {
-                    outfile << "Player 1 score: " << snake->GetLength() -2<< ", Player 2 score: " << snake2->GetLength()-2 << endl;
+                    outfile << snake->GetLength() -2 << endl<< snake2->GetLength()-2 << endl;
                     outfile.close();
                 }
             }
+            //read scores
+            
+
 
 
             if (snake1_wins) {
