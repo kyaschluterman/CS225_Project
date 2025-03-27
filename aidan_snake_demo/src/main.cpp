@@ -107,6 +107,7 @@ int main() {
     PlayMusicStream(music);
 
     int writeScore = 0;
+    int highestscore;
 
     while (!WindowShouldClose()) {
         BeginDrawing();
@@ -197,18 +198,33 @@ int main() {
                     outfile.close();
                 }
             }
+
+            highestscore = snake->GetLength()-2;
             //read scores
-            
+            int numby; 
+            ifstream fin("Scores.txt");
+            while( !fin.eof() ){
+                fin>>numby;
+                if(numby>highestscore){
+                    highestscore = numby;
+                }
+            }
+            fin.close();
+            string str1 = "Top score: " + to_string(highestscore);
 
 
+
+            DrawRectangle( 380, 410, 300, 130, BLACK );
+            DrawRectangle( 390, 420, 280, 110, RAYWHITE );
+            DrawText( str1.c_str(), 400, 495, 25, BLACK);
 
             if (snake1_wins) {
-                DrawText("Player 1 Wins!", 10, 10, 25, BLACK);
+                DrawText("Player 1 Wins!", 400, 435, 25, BLACK);
             }
             else if (snake2_wins) {
-                DrawText("Player 2 Wins!", 10, 10, 25, BLACK);
+                DrawText("Player 2 Wins!", 400, 435, 25, BLACK);
             }
-            DrawText("Press 'R' to Restart.", 10, 40, 25, BLACK);
+            DrawText("Press 'R' to Restart.", 400, 465, 25, BLACK);
             if (IsKeyDown(KEY_R)) {
 
                 
