@@ -4,7 +4,7 @@ using namespace std;
 Obstacle::Obstacle() {
     col = rand() % COLS + 1;
     row = rand() % ROWS + 1;
-    texture = LoadTexture("obstacle.png");
+    texture = LoadTexture("obstacle1.png");
 }
 
 void Obstacle::Reset() {
