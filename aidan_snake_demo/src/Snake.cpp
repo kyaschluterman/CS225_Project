@@ -212,27 +212,30 @@ Snake& Snake::operator++(int) {
 }
 
 void Snake::operator-=(const int amount) {
-	if (amount < length - 1) {
-		Segment* tail = GetTail();
-		for (int i = 0; i < amount; i++) {
-			Segment* new_tail = tail->seg_ahead;
-			delete tail;
-			tail = new_tail;
-			length--;
-		}
-		tail->seg_behind = nullptr;
+	if (amount >= length - 1) {
+		throw "Snake too short";
 	}
-}
-
-Snake& Snake::operator--(int) {
-	if (length > 2) {
-		Segment* tail = GetTail();
+	Segment* tail = GetTail();
+	for (int i = 0; i < amount; i++) {
 		Segment* new_tail = tail->seg_ahead;
 		delete tail;
 		tail = new_tail;
 		length--;
-		tail->seg_behind = nullptr;
 	}
+	tail->seg_behind = nullptr;
+}
+
+Snake& Snake::operator--(int) {
+	if (length<= 2) {
+		throw "Snake too short";
+	}
+	Segment* tail = GetTail();
+	Segment* new_tail = tail->seg_ahead;
+	delete tail;
+	tail = new_tail;
+	length--;
+	tail->seg_behind = nullptr;
+
 	return *this;
 }
 

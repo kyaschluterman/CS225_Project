@@ -41,7 +41,11 @@ Pear::Pear(int col, int row) : Fruit(col, row) {
 
 void Pear::GetEatenBy(Snake& snake) {
 	snake.AddSpeed(-speed_to_decrease);
-	snake--;
+	try{
+		snake--;
+	}catch(...){
+	}
+	
 }
 
 void Pear::Draw() {

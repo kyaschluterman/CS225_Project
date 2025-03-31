@@ -226,7 +226,6 @@ int main() {
             }
             DrawText("Press 'R' to Restart.", 400, 465, 25, BLACK);
             if (IsKeyDown(KEY_R)) {
-
                 
                 game_over = false;
                 snake1_wins = false;
